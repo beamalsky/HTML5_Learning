@@ -145,10 +145,10 @@ p.nominalBounds = new cjs.Rectangle(-1.5,-1.5,103,35);
 	this.initialize(mode,startPosition,loop,{});
 
 	// Square
-	this.xNumber = new cjs.Text("98", "18px 'Arial'");
+	this.xNumber = new cjs.Text("98", "bold 18px 'Arial Black'");
 	this.xNumber.name = "xNumber";
 	this.xNumber.textAlign = "center";
-	this.xNumber.lineHeight = 20;
+	this.xNumber.lineHeight = 27;
 	this.xNumber.lineWidth = 51;
 	this.xNumber.parent = this;
 	this.xNumber.setTransform(-72.9,94.1);
