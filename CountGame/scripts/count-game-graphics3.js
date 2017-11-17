@@ -2,9 +2,70 @@
 
 var p; // shortcut to reference prototypes
 var lib={};var ss={};var img={};
+lib.webFontTxtInst = {}; 
+var loadedTypekitCount = 0;
+var loadedGoogleCount = 0;
+var gFontsUpdateCacheList = [];
+var tFontsUpdateCacheList = [];
 lib.ssMetadata = [];
 
 
+
+lib.updateListCache = function (cacheList) {		
+	for(var i = 0; i < cacheList.length; i++) {		
+		if(cacheList[i].cacheCanvas)		
+			cacheList[i].updateCache();		
+	}		
+};		
+
+lib.addElementsToCache = function (textInst, cacheList) {		
+	var cur = textInst;		
+	while(cur != null && cur != exportRoot) {		
+		if(cacheList.indexOf(cur) != -1)		
+			break;		
+		cur = cur.parent;		
+	}		
+	if(cur != exportRoot) {		
+		var cur2 = textInst;		
+		var index = cacheList.indexOf(cur);		
+		while(cur2 != null && cur2 != cur) {		
+			cacheList.splice(index, 0, cur2);		
+			cur2 = cur2.parent;		
+			index++;		
+		}		
+	}		
+	else {		
+		cur = textInst;		
+		while(cur != null && cur != exportRoot) {		
+			cacheList.push(cur);		
+			cur = cur.parent;		
+		}		
+	}		
+};		
+
+lib.gfontAvailable = function(family, totalGoogleCount) {		
+	lib.properties.webfonts[family] = true;		
+	var txtInst = lib.webFontTxtInst && lib.webFontTxtInst[family] || [];		
+	for(var f = 0; f < txtInst.length; ++f)		
+		lib.addElementsToCache(txtInst[f], gFontsUpdateCacheList);		
+
+	loadedGoogleCount++;		
+	if(loadedGoogleCount == totalGoogleCount) {		
+		lib.updateListCache(gFontsUpdateCacheList);		
+	}		
+};		
+
+lib.tfontAvailable = function(family, totalTypekitCount) {		
+	lib.properties.webfonts[family] = true;		
+	var txtInst = lib.webFontTxtInst && lib.webFontTxtInst[family] || [];		
+	for(var f = 0; f < txtInst.length; ++f)		
+		lib.addElementsToCache(txtInst[f], tFontsUpdateCacheList);		
+
+	loadedTypekitCount++;		
+	if(loadedTypekitCount == totalTypekitCount) {		
+		lib.updateListCache(tFontsUpdateCacheList);		
+	}		
+};
 // symbols:
 // helper functions:
 
@@ -25,20 +86,7 @@ function getMCSymbolPrototype(symbol, nominalBounds, frameBounds) {
 	}
 
 
-(lib.xSquare = function(mode,startPosition,loop) {
-	this.initialize(mode,startPosition,loop,{});
-
-	// Layer 1
-	this.shape = new cjs.Shape();
-	this.shape.graphics.f("#FF6699").s().p("AkVEVIAAopIIrAAIAAIpg");
-	this.shape.setTransform(27.8,27.8);
-
-	this.timeline.addTween(cjs.Tween.get(this.shape).wait(1));
-
-}).prototype = getMCSymbolPrototype(lib.xSquare, new cjs.Rectangle(0,0,55.5,55.5), null);
-
-
-(lib.xRestart = function(mode,startPosition,loop) {
+(lib.lRestart = function(mode,startPosition,loop) {
 	this.initialize(mode,startPosition,loop,{});
 
 	// Layer 1
@@ -140,34 +188,53 @@ function getMCSymbolPrototype(symbol, nominalBounds, frameBounds) {
 p.nominalBounds = new cjs.Rectangle(-1.5,-1.5,103,35);
 
 
-// stage content:
-(lib.countgamegraphics3 = function(mode,startPosition,loop) {
+(lib.NumberedBox = function(mode,startPosition,loop) {
 	this.initialize(mode,startPosition,loop,{});
 
-	// Square
-	this.xNumber = new cjs.Text("98", "bold 18px 'Arial Black'");
-	this.xNumber.name = "xNumber";
-	this.xNumber.textAlign = "center";
-	this.xNumber.lineHeight = 27;
-	this.xNumber.lineWidth = 51;
-	this.xNumber.parent = this;
-	this.xNumber.setTransform(-72.9,94.1);
+	// Layer 1
+	this.numberText = new cjs.Text("98", "bold 18px 'Arial Black'");
+	this.numberText.name = "numberText";
+	this.numberText.textAlign = "center";
+	this.numberText.lineHeight = 27;
+	this.numberText.lineWidth = 48;
+	this.numberText.parent = this;
+	this.numberText.setTransform(26,14.5);
 
-	this.instance = new lib.xSquare();
+	this.shape = new cjs.Shape();
+	this.shape.graphics.f().s("#FF6699").ss(1,1,1).p("AkBkBIIDAAIAAIDIoDAAg");
+	this.shape.setTransform(26.4,25.8);
+
+	this.shape_1 = new cjs.Shape();
+	this.shape_1.graphics.f("#FF6699").s().p("AkAEBIAAoCIICAAIAAICg");
+	this.shape_1.setTransform(26.4,25.8);
+
+	this.timeline.addTween(cjs.Tween.get({}).to({state:[{t:this.shape_1},{t:this.shape},{t:this.numberText}]}).wait(1));
+
+}).prototype = getMCSymbolPrototype(lib.NumberedBox, new cjs.Rectangle(-0.4,-1,53.5,53.5), null);
+
+
+(lib.Background = function(mode,startPosition,loop) {
+	this.initialize(mode,startPosition,loop,{});
+
+	// Layer 1
+	this.shape = new cjs.Shape();
+	this.shape.graphics.f("#FFCCCC").s().p("A3cfQMAAAg+fMAu5AAAMAAAA+fg");
+	this.shape.setTransform(150.1,200);
+
+	this.timeline.addTween(cjs.Tween.get(this.shape).wait(1));
+
+}).prototype = getMCSymbolPrototype(lib.Background, new cjs.Rectangle(0,0,300.3,400), null);
+
+
+(lib.GameOverView = function(mode,startPosition,loop) {
+	this.initialize(mode,startPosition,loop,{});
+
+	// Layer 1
+	this.instance = new lib.lRestart();
 	this.instance.parent = this;
-	this.instance.setTransform(-72.8,104.8,1,1,0,0,0,27.8,27.8);
+	this.instance.setTransform(100,238);
+	new cjs.ButtonHelper(this.instance, 0, 1, 2);
 
-	this.timeline.addTween(cjs.Tween.get({}).to({state:[{t:this.instance},{t:this.xNumber}]}).wait(1));
-
-	// Restart
-	this.instance_1 = new lib.xRestart();
-	this.instance_1.parent = this;
-	this.instance_1.setTransform(150,240.3,1,1,0,0,0,50,16);
-	new cjs.ButtonHelper(this.instance_1, 0, 1, 2);
-
-	this.timeline.addTween(cjs.Tween.get(this.instance_1).wait(1));
-
-	// EndScreen
 	this.shape = new cjs.Shape();
 	this.shape.graphics.f("#000000").s().p("AgLBQQgGgDgEgGQgDgGAAgHQAAgHADgFQAEgGAGgEQAFgDAGAAQAHAAAGADQAGAEADAGQADAFAAAHQAAALgHAHQgHAHgLAAQgFAAgGgDgAgEAbIgEgFIgHgTIgHgaQgCgOAAgJQAAgTAIgJQAIgIAIAAQAKAAAHAIQAIAJAAATQAAAJgCAOIgHAaIgGATIgEAEQgCACgEAAIgEgBg");
 	this.shape.setTransform(203.4,148.5);
@@ -200,17 +267,38 @@ p.nominalBounds = new cjs.Rectangle(-1.5,-1.5,103,35);
 	this.shape_7.graphics.f("#FFCCCC").s().p("A3bfQMAAAg+fMAu3AAAMAAAA+fg");
 	this.shape_7.setTransform(150,200);
 
-	this.timeline.addTween(cjs.Tween.get({}).to({state:[{t:this.shape_7},{t:this.shape_6},{t:this.shape_5},{t:this.shape_4},{t:this.shape_3},{t:this.shape_2},{t:this.shape_1},{t:this.shape}]}).wait(1));
+	this.timeline.addTween(cjs.Tween.get({}).to({state:[{t:this.shape_7},{t:this.shape_6},{t:this.shape_5},{t:this.shape_4},{t:this.shape_3},{t:this.shape_2},{t:this.shape_1},{t:this.shape},{t:this.instance}]}).wait(1));
+
+}).prototype = getMCSymbolPrototype(lib.GameOverView, new cjs.Rectangle(0,0,300,400), null);
+
+
+// stage content:
+(lib.countgamegraphics3 = function(mode,startPosition,loop) {
+	this.initialize(mode,startPosition,loop,{});
+
+	// Square
+	this.instance = new lib.NumberedBox();
+	this.instance.parent = this;
+	this.instance.setTransform(-75.9,39.9,1,1,0,0,0,27.7,25.8);
+
+	this.timeline.addTween(cjs.Tween.get(this.instance).wait(1));
+
+	// EndScreen
+	this.instance_1 = new lib.GameOverView();
+	this.instance_1.parent = this;
+	this.instance_1.setTransform(150,200,1,1,0,0,0,150,200);
+
+	this.timeline.addTween(cjs.Tween.get(this.instance_1).wait(1));
 
 	// Background
-	this.shape_8 = new cjs.Shape();
-	this.shape_8.graphics.f("#FFCCCC").s().p("A3cfQMAAAg+fMAu5AAAMAAAA+fg");
-	this.shape_8.setTransform(150.1,200);
+	this.instance_2 = new lib.Background();
+	this.instance_2.parent = this;
+	this.instance_2.setTransform(150.1,200,1,1,0,0,0,150.1,200);
 
-	this.timeline.addTween(cjs.Tween.get(this.shape_8).wait(1));
+	this.timeline.addTween(cjs.Tween.get(this.instance_2).wait(1));
 
 }).prototype = p = new cjs.MovieClip();
-p.nominalBounds = new cjs.Rectangle(49.4,200,400.9,400);
+p.nominalBounds = new cjs.Rectangle(46.4,200,403.9,400);
 // library properties:
 lib.properties = {
 	id: 'F45AF3C025BF4C23B0EEEF3C8EFC5632',
@@ -219,6 +307,7 @@ lib.properties = {
 	fps: 24,
 	color: "#FFFFFF",
 	opacity: 1.00,
+	webfonts: {},
 	manifest: [],
 	preloads: []
 };
