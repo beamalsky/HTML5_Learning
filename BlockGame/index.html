@@ -6,39 +6,95 @@
 </head>
 
 <body onload="init();">
-	<canvas id="demoCanvas" width="500" height="650"></canvas>
+	<canvas id="demoCanvas" width="500" height="700"></canvas>
 	<script>
 		const PADDLE_WIDTH = 75;
 		const PADDLE_HEIGHT = 15;
 		const BRICKS_WIDTH = 60;
 		const BRICKS_HEIGHT = 25;
 		const BALL_RADIUS = 9;
-		const FULL_X_SPEED = 7;
+		const FULL_X_SPEED = 8;
+		const PADDLE_SPEED = 20;
 
 		var stage;
 		var paddle;
 		var ball;
 		var bricks = [];
-		var brickColor = randomHex();
-		var paddleColor = randomHex();
+		var brickColor;
+		var paddleColor;
 		var score = 0;
 		var lives = 3;
 		var scoreText;
+		var gameStarted = false;
+		var bgmStarted = false;
+
+		const KEYCODE_LEFT = 37;
+		const KEYCODE_RIGHT = 39;
+		const SPACEBAR = 32;
+		var keyboardMoveLeft = false;
+		var keyboardMoveRight = false;
 
 		function init() {
 			stage = new createjs.Stage("demoCanvas");
 
+			createjs.Touch.enable(stage);
 			createjs.Ticker.setFPS(60);
 			createjs.Ticker.addEventListener("tick", tick);
 
 			demoCanvas.style.backgroundColor = randomHex();
-			demoCanvas.alpha = .5;
+			brickColor = randomHex();
+			paddleColor = randomHex();
 
 			createBrickGrid();
-			createBall();
 			createPaddle();
+			createBall();
 			createScoreText();
 			addToScore(0);
+
+			//load sounds
+			createjs.Sound.registerSound("assets/hit.wav", "hit_brick");
+			createjs.Sound.registerSound("assets/blockGame.mp3", "bgm");
+
+			window.onkeyup = keyUpHandler;
+			window.onkeydown = keyDownHandler;
+
+			stage.on("stagemousemove", function(event) {
+				paddle.x = stage.mouseX;
+			});
+
+			stage.on("stagemousedown", function(event) {
+				startLevel();
+			});
+		}
+
+		function startLevel() {
+			if(!gameStarted) {
+				gameStarted = true;
+				ball.xSpeed = 7;
+				ball.ySpeed = 7;
+				ball.up = true;
+				ball.right = Boolean(Math.floor(Math.random() * 2));
+			}
+
+			if (!bgmStarted) {
+				createjs.Sound.play("bgm");
+				bgmStarted = true;
+			}
+		}
+
+		function keyDownHandler(e) {
+			switch(e.keyCode) {
+				case KEYCODE_LEFT: keyboardMoveLeft = true; break;
+				case KEYCODE_RIGHT: keyboardMoveRight = true; break;
+				case SPACEBAR: startLevel(); break;
+			}
+		}
+
+		function keyUpHandler(e) {
+			switch(e.keyCode) {
+				case KEYCODE_LEFT: keyboardMoveLeft = false;
+				case KEYCODE_RIGHT: keyboardMoveRight = false;
+			}
 		}
 
 		function createScoreText() {
@@ -67,11 +123,75 @@
 			ball.xSpeed = 0;
 			ball.ySpeed = 0;
 			ball.x = paddle.x;
-			ball.y = paddle.y - PADDLE_HEIGHT / 2 - BALL_RADIUS;			
+			ball.y = paddle.y - PADDLE_HEIGHT / 2 - BALL_RADIUS;	
+
+			demoCanvas.style.backgroundColor = randomHex();
+
+			gameStarted = false;
+
+			if (lives < 0) {
+				loseGame();
+			}		
+		}
+
+		function loseGame() {
+
+			if (confirm("You lost. :(\n\nWould you like to play again?") == true) {
+				lives = 3;
+				score = 0;
+				init();
+			} else {
+				console.log("you lost!")
+			}
+		}
+
+		function winGame() {
+
+			ball.xSpeed = 0;
+			ball.ySpeed = 0;
+			ball.x = paddle.x;
+			ball.y = paddle.y - PADDLE_HEIGHT / 2 - BALL_RADIUS;	
+
+			demoCanvas.style.backgroundColor = randomHex();
+
+			gameStarted = false;
+
+			if (confirm("You won! :)\n\nWould you like to play again?") == true) {
+				gameStarted = false;
+				lives += 3;
+				init();
+			} else {
+				console.log("no replay");
+			}
 		}
 
 		function tick() {
-			stage.update();
+
+			//keyboard movement
+			if (keyboardMoveLeft) {
+				paddle.x -= PADDLE_SPEED;
+			}
+
+			if (keyboardMoveRight) {
+				paddle.x += PADDLE_SPEED;
+			}
+
+			//keep the paddle from moving through side walls
+			if (paddle.x + PADDLE_WIDTH / 2 > stage.canvas.width - 10) {
+				paddle.x = stage.canvas.width - PADDLE_WIDTH / 2 - 10;
+			}
+
+			if (paddle.x - PADDLE_WIDTH / 2 < 10) {
+				paddle.x = PADDLE_WIDTH / 2 + 10;
+			}
+
+			//keep ball on paddle if the game hasn't started or is paused
+			if (!gameStarted) {
+				ball.x = paddle.x;
+				ball.y = paddle.y - PADDLE_HEIGHT / 2 - BALL_RADIUS;
+				stage.update();
+				return;
+			}
 
 			if (ball.up) {
 				ball.y -= ball.ySpeed;
@@ -96,6 +216,7 @@
 			for (var i = 0; i < bricks.length; i++) {
 				if (checkCollision(ball, bricks[i])) {
 					addToScore(100);
+					createjs.Sound.play("hit_brick");
 					destroyBrick(bricks[i]);
 					bricks.splice(i, 1);
 					i--;
@@ -126,6 +247,7 @@
 			ball.lastX = ball.x;
 			ball.lastY = ball.y;
 
+			stage.update();
 		}
 
 		function checkCollision(ballElement,hitElement) {
@@ -223,26 +345,30 @@
 		}
 
 		function destroyBrick(b) {
-			createjs.Tween.get(b, {}).to({scaleX:0, scaleY:0}, 500);
+			createjs.Tween.get(b, {}).to({scaleX:0, scaleY:0}, 300);
 			setTimeout(removeBrickFromScreen, 500);
 		}
 
 		function removeBrickFromScreen(brick) {
 			stage.removeChild(brick);
+
+			if (bricks.length === 0) {
+				winGame();
+			}
 		}
 
 		function createBall() {
 			ball = new createjs.Shape();
 			ball.graphics.beginFill(paddleColor).beginStroke('#FFFFFF').drawCircle(0, 0, BALL_RADIUS);
 			
-			ball.x = stage.canvas.width / 2;
-			ball.y = stage.canvas.height / 2;
+			ball.x = paddle.x;
+			ball.y = paddle.y - PADDLE_HEIGHT/2 - BALL_RADIUS;
 			stage.addChild(ball);
 
 			ball.up = true;
 			ball.right = true;
-			ball.xSpeed = 4;
-			ball.ySpeed = 5;
+			ball.xSpeed = 0;
+			ball.ySpeed = 0;
 			ball.lastX = 0;
 			ball.lastY = 0;
 		}
@@ -252,7 +378,7 @@
 			paddle.graphics.beginFill(paddleColor).beginStroke('#FFFFFF').drawRect(0, 0, PADDLE_WIDTH, PADDLE_HEIGHT);
 			
 			paddle.x = stage.canvas.width / 2 - PADDLE_WIDTH / 2;
-			paddle.y = stage.canvas.height * .9;
+			paddle.y = stage.canvas.height * .87;
 		    paddle.regX = PADDLE_WIDTH/2;
 	        paddle.regY = PADDLE_HEIGHT/2;
 		    paddle.setBounds(paddle.regX,paddle.regY,PADDLE_WIDTH,PADDLE_HEIGHT);
@@ -269,6 +395,7 @@
 			}
 			return hex;
 		}
+
 	</script>
 </body>
 
