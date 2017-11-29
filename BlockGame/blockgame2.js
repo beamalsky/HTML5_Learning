@@ -16,9 +16,20 @@ function init2() {
 	createBrickGrid2(brick_across, brick_down);
 
 	destroy_count = 0;
+
+	stage.on("stagemousedown", function(event) {
+		if (!bgmStarted) {
+			bgm = createjs.Sound.play("bgm");
+			bgmStarted = true;
+		}
+	});
 }
 
 function tick2() {
+	if (createjs.Ticker.getTime() >= nextSwitch) {
+		nextSwitch += LEVEL_TIME;
+		resetLevel();
+	}
 
 	stage.update();
 }
@@ -41,7 +52,6 @@ function createBrickGrid2(l, w) {
 		brick.on("mousedown", function(event) {
 			destroyBricks(this);
 			destroy_count = 0;
-			moveBricks(bricks);
 		});
 
 		brick.regX = BRICKS_WIDTH / 2;
@@ -73,7 +83,7 @@ function destroyBricks(b) {
 	if (destroy_count === 1) {
 		loseLife();
 	} else {
-		addToScore(destroy_count * 10);
+		addToScore(destroy_count * 5);
 		createjs.Sound.play("hit1");
 	}
 }
@@ -130,17 +140,5 @@ function checkLeft(b) {
 		return true;
 	} else {
 		return false;
-	}
-}
-
-function moveBricks(b) {
-	for (i = 0; i < bricks.length; i++) {
-		if (bricks[i].destroyed) {
-			//bricks[i - 1].x = bricks[i].x;
-
-			//bricks.splice(1, i);
-
-			console.log(bricks.length);
-		}
 	}
 }

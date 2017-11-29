@@ -2,6 +2,7 @@ window.addEventListener("load", init);
 
 const BRICKS_WIDTH = 60;
 const BRICKS_HEIGHT = 25;
+const LEVEL_TIME = 6000;
 
 var brick_across = 7;
 var brick_down; 
@@ -17,6 +18,8 @@ var brickColor2;
 var brickColor3;
 var gameStarted = false;
 var bgmStarted = false;
+var nextSwitch = LEVEL_TIME;
+var bgm;
 
 const KEYCODE_LEFT = 37;
 const KEYCODE_RIGHT = 39;
@@ -53,6 +56,17 @@ function init() {
 	chooseGame();
 }
 
+function resetLevel() {
+	if (bgm.playState === "playFinished") {
+	//if (score >= 500) { to test win states
+		winGame();
+	} else {
+		bricks = [];
+		gameStarted = false;
+		init();
+	}
+}
+
 function chooseGame() {
 	if (Boolean(Math.floor(Math.random() * 2))) {
 		init1();
@@ -82,17 +96,27 @@ function addToScore(points) {
 
 function winGame() {
 
-	demoCanvas.style.backgroundColor = randomHex();
+	stage.enableDOMEvents(false);
+	stage.removeAllChildren();
+	stage.removeAllEventListeners();
+	stage.clear();
 
-	gameStarted = false;
+	showWinText();
+}
 
-	if (confirm("You won! :)\n\nWould you like to play again?") == true) {
-		gameStarted = false;
-		lives += 3;
-		init();
-	} else {
-		console.log("no replay");
-	}
+function showWinText() {
+	winText2 = new createjs.Text(`You won!\n\nScore: ${score}`, "bold 40px Arial", "#FFFFFF");
+	winText2.x = stage.canvas.width / 2;			
+	winText2.y = stage.canvas.height / 2 - 100;
+	winText2.textAlign = "center";
+
+	winText = new createjs.Text(`You won!\n\nScore: ${score}`, "bold 40px Arial", "#000000");
+	winText.x = stage.canvas.width / 2 - 1;			
+	winText.y = stage.canvas.height / 2 - 101;
+	winText.textAlign = "center";
+
+	stage.addChild(winText);
+	stage.addChild(winText2);
 }
 
 function loseLife() {
@@ -111,18 +135,9 @@ function loseLife() {
 }
 
 function loseGame() {
-
-	if (confirm("You lost. :(\n\nWould you like to play again?") == true) {
-		lives = 3;
-		score = 0;
-		scoreText.text = `Score: ${score}  |  Lives: ${lives}`;
-		scoreText2.text = `Score: ${score}  |  Lives: ${lives}`;
-		//stage.removeAllChildren();
-		//stage.clear();
-		init();
-	} else {
-		console.log("you lost!")
-	}
+	lives = 3;
+	score -= 1000;
+	resetLevel();
 }
 
 function createBrick(x, y, c) {
@@ -140,4 +155,14 @@ function createBrick(x, y, c) {
 	stage.addChild(brick);
 
 	bricks.push(brick);
+}
+
+function randomHex() {
+	var hex = "#"
+	var hexArray = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9","a","b","c","d","e","f"];
+	for (i = 0; i < 6; i++) {
+		var rand = hexArray[Math.floor(Math.random() * hexArray.length)]
+		hex += rand
+	}
+	return hex;
 }

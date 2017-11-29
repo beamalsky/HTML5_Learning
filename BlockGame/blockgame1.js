@@ -7,18 +7,20 @@ const PADDLE_SPEED = 15;
 var paddle;
 var ball;
 var paddleColor;
+var brickGrids = [];
 
 function init1() {
 
-	brick_down = 7;
+	brick_down = 9;
 	paddleColor = randomHex();
 	brickColor1 = randomHex();
 
+	createjs.Ticker.addEventListener("tick", tick1);
+
 	createPaddle();
 	createBall();
-	createBrickGrid1(brick_across, brick_down);
 	
-	createjs.Ticker.addEventListener("tick", tick1);
+	createBrickGrid1(brick_across, brick_down);
 	
 	window.onkeyup = keyUpHandler;
 	window.onkeydown = keyDownHandler;
@@ -29,6 +31,7 @@ function init1() {
 
 	stage.on("stagemousedown", function(event) {
 		startLevel1();
+		nextSwitch = createjs.Ticker.getTime() + LEVEL_TIME;
 	});
 }
 
@@ -42,7 +45,7 @@ function startLevel1() {
 	}
 
 	if (!bgmStarted) {
-		createjs.Sound.play("bgm");
+		bgm = createjs.Sound.play("bgm");
 		bgmStarted = true;
 	}
 }
@@ -71,17 +74,6 @@ function loseLife1() {
 	ball.x = paddle.x;
 	ball.y = paddle.y - PADDLE_HEIGHT / 2 - BALL_RADIUS - 5;	
 	
-}
-
-function winGame1() {
-
-	winGame();
-
-	ball.xSpeed = 0;
-	ball.ySpeed = 0;
-	ball.x = paddle.x;
-	ball.y = paddle.y - PADDLE_HEIGHT / 2 - BALL_RADIUS;	
-
 }
 
 function tick1() {
@@ -166,6 +158,11 @@ function tick1() {
 	ball.lastX = ball.x;
 	ball.lastY = ball.y;
 
+	if (createjs.Ticker.getTime() >= nextSwitch) {
+		nextSwitch += LEVEL_TIME;
+		resetLevel();
+	}
+
 	stage.update();
 }
 
@@ -241,10 +238,63 @@ function newBallXSpeedAfterCollision(ballElement,hitElement) {
 }
 
 function createBrickGrid1(l, w) {
-	for (var i = 0; i < l; i++)
+	var x = Math.floor(Math.random() * 4)
+	console.log(x);
+
+	switch(x) {
+		case 0: createBrickGrid1_0(l, w + 3); break;
+		case 1: createBrickGrid1_1(l, w + 5); break; 
+		case 2: createBrickGrid1_2(l, w); break; 
+		case 3: createBrickGrid1_3(l, w + 5); break;
+	}
+}
+
+function createBrickGrid1_0(l, w) {
+	for (var i = 0; i < l; i++) {
 		for (var j = 0; j < w; j++) {
-			createBrick(i * (BRICKS_WIDTH + 10) + 40, j * (BRICKS_HEIGHT + 5) + 20, brickColor1)
+			if (!(j % 2)) {
+				createBrick(i * (BRICKS_WIDTH + 10) + 40, j * (BRICKS_HEIGHT + 5) + 20, brickColor1);
+			}
 		}
+	}
+}
+
+function createBrickGrid1_1(l, w) {
+	for (var i = 0; i < l; i++) {
+		for (var j = 0; j < w; j++) {
+			if (i % 2) {
+				createBrick(i * (BRICKS_WIDTH + 10) + 40, j * (BRICKS_HEIGHT + 5) + 20, brickColor1);
+			}
+		}
+	}
+}
+
+function createBrickGrid1_2(l, w) {
+	for (var i = 0; i < l; i++) {
+		for (var j = 0; j < w; j++) {
+			if (!(i % 2)) {
+				createBrick(i * (BRICKS_WIDTH + 10) + 40, j * (BRICKS_HEIGHT + 5) + 20, brickColor1);
+			}
+		}
+	}
+}
+
+function createBrickGrid1_3(l, w) {
+	for (var i = 0; i < l; i++) {
+		for (var j = 0; j < w; j++) {
+			if (!(j % 2)) {
+				createBrick(i * (BRICKS_WIDTH + 10) + 40, j * (BRICKS_HEIGHT + 5) + 20, brickColor1);
+			}
+		}
+	}
+
+	for (var i = 0; i < l; i++) {
+		for (var j = 0; j < w; j++) {
+			if (i % 2) {
+				createBrick(i * (BRICKS_WIDTH + 10) + 40, j * (BRICKS_HEIGHT + 5) + 20, brickColor1);
+			}
+		}
+	}
 }
 
 function destroyBrick(b) {
@@ -254,10 +304,6 @@ function destroyBrick(b) {
 
 function removeBrickFromScreen(brick) {
 	stage.removeChild(brick);
-
-	if (bricks.length === 0) {
-		winGame1();
-	}
 }
 
 function createBall() {
@@ -287,14 +333,4 @@ function createPaddle() {
     paddle.setBounds(paddle.regX,paddle.regY,PADDLE_WIDTH,PADDLE_HEIGHT);
 	
 	stage.addChild(paddle);
-}
-
-function randomHex() {
-	var hex = "#"
-	var hexArray = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9","a","b","c","d","e","f"];
-	for (i = 0; i < 6; i++) {
-		var rand = hexArray[Math.floor(Math.random() * hexArray.length)]
-		hex += rand
-	}
-	return hex;
 }
