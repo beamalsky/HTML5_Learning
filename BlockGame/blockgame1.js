@@ -2,22 +2,21 @@ const PADDLE_WIDTH = 75;
 const PADDLE_HEIGHT = 15;
 const BALL_RADIUS = 9;
 const FULL_X_SPEED = 10;
-const PADDLE_SPEED = 20;
+const PADDLE_SPEED = 15;
 
-var stage;
 var paddle;
 var ball;
-var bricks = [];
-var brickColor;
 var paddleColor;
 
 function init1() {
 
+	brick_down = 7;
 	paddleColor = randomHex();
+	brickColor1 = randomHex();
 
-	createBrickGrid(7, 8);
 	createPaddle();
 	createBall();
+	createBrickGrid1(brick_across, brick_down);
 	
 	createjs.Ticker.addEventListener("tick", tick1);
 	
@@ -61,25 +60,6 @@ function keyUpHandler(e) {
 		case KEYCODE_LEFT: keyboardMoveLeft = false;
 		case KEYCODE_RIGHT: keyboardMoveRight = false;
 	}
-}
-
-function createScoreText() {
-	scoreText = new createjs.Text("", "16px Arial", "#000000");
-	scoreText.x = 9;			
-	scoreText.y = stage.canvas.height - 25;
-
-	scoreText2 = new createjs.Text("", "16px Arial", "#ffffff");
-	scoreText2.x = 10;			
-	scoreText2.y = stage.canvas.height - 26;
-
-	stage.addChild(scoreText);
-	stage.addChild(scoreText2);
-}
-
-function addToScore(points) {
-	score += points;
-	scoreText.text = `Score: ${score}  |  Lives: ${lives}`;
-	scoreText2.text = `Score: ${score}  |  Lives: ${lives}`;
 }
 
 function loseLife1() {
@@ -155,7 +135,7 @@ function tick1() {
 	for (var i = 0; i < bricks.length; i++) {
 		if (checkCollision(ball, bricks[i])) {
 			addToScore(100);
-			createjs.Sound.play("hit_brick");
+			createjs.Sound.play("hit1");
 			destroyBrick(bricks[i]);
 			bricks.splice(i, 1);
 			i--;
@@ -258,6 +238,13 @@ function newBallXSpeedAfterCollision(ballElement,hitElement) {
 		ball.xSpeed = FULL_X_SPEED - ((endPoint - ballElement.x)/(endPoint-midPoint)) * FULL_X_SPEED
 		ball.right = true;	
 	}
+}
+
+function createBrickGrid1(l, w) {
+	for (var i = 0; i < l; i++)
+		for (var j = 0; j < w; j++) {
+			createBrick(i * (BRICKS_WIDTH + 10) + 40, j * (BRICKS_HEIGHT + 5) + 20, brickColor1)
+		}
 }
 
 function destroyBrick(b) {
