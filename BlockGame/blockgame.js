@@ -16,6 +16,7 @@ var brick_down;
 var brickColor1;
 var brickColor2;
 var brickColor3;
+var brickColor4;
 var gameStarted = false;
 var bgmStarted = false;
 var nextSwitch = LEVEL_TIME;
@@ -53,7 +54,8 @@ function init() {
 	createjs.Sound.registerSound("assets/blockGame.mp3", "bgm");
 
 	//which block game?
-	chooseGame();
+	init3();
+	//chooseGame();
 }
 
 function resetLevel() {
@@ -154,6 +156,7 @@ function createBrick(x, y, c) {
     brick.setBounds(brick.regX,brick.regY,BRICKS_WIDTH,BRICKS_HEIGHT);
 	stage.addChild(brick);
 
+	//return brick;
 	bricks.push(brick);
 }
 
