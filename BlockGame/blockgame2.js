@@ -21,13 +21,14 @@ function init2() {
 		if (!bgmStarted) {
 			bgm = createjs.Sound.play("bgm");
 			bgmStarted = true;
+			startTime = createjs.Ticker.getTime();
+			nextSwitch = startTime + LEVEL_TIMES[level];
 		}
 	});
 }
 
 function tick2() {
-	if (createjs.Ticker.getTime() >= nextSwitch) {
-		nextSwitch += LEVEL_TIME;
+	if (createjs.Ticker.getTime() >= nextSwitch && bgmStarted) {
 		resetLevel();
 	}
 
@@ -83,7 +84,7 @@ function destroyBricks(b) {
 	if (destroy_count === 1) {
 		loseLife();
 	} else {
-		addToScore(destroy_count * 5);
+		addToScore(destroy_count * 2);
 		createjs.Sound.play("hit1");
 	}
 }

@@ -1,7 +1,7 @@
 const PADDLE_WIDTH = 75;
 const PADDLE_HEIGHT = 15;
 const BALL_RADIUS = 9;
-const FULL_X_SPEED = 10;
+const FULL_X_SPEED = 8;
 const PADDLE_SPEED = 15;
 
 var paddle;
@@ -31,7 +31,6 @@ function init1() {
 
 	stage.on("stagemousedown", function(event) {
 		startLevel1();
-		nextSwitch = createjs.Ticker.getTime() + LEVEL_TIME;
 	});
 }
 
@@ -47,6 +46,8 @@ function startLevel1() {
 	if (!bgmStarted) {
 		bgm = createjs.Sound.play("bgm");
 		bgmStarted = true;
+		startTime = createjs.Ticker.getTime();
+		nextSwitch = startTime + LEVEL_TIMES[level];
 	}
 }
 
@@ -77,6 +78,11 @@ function loseLife1() {
 }
 
 function tick1() {
+
+	if (createjs.Ticker.getTime() >= nextSwitch && bgmStarted) {
+		resetLevel();
+		return;
+	}
 
 	//keyboard movement
 	if (keyboardMoveLeft) {
@@ -158,11 +164,6 @@ function tick1() {
 	ball.lastX = ball.x;
 	ball.lastY = ball.y;
 
-	if (createjs.Ticker.getTime() >= nextSwitch) {
-		nextSwitch += LEVEL_TIME;
-		resetLevel();
-	}
-
 	stage.update();
 }
 
@@ -239,7 +240,6 @@ function newBallXSpeedAfterCollision(ballElement,hitElement) {
 
 function createBrickGrid1(l, w) {
 	var x = Math.floor(Math.random() * 4)
-	console.log(x);
 
 	switch(x) {
 		case 0: createBrickGrid1_0(l, w + 3); break;

@@ -2,7 +2,13 @@ window.addEventListener("load", init);
 
 const BRICKS_WIDTH = 60;
 const BRICKS_HEIGHT = 25;
-const LEVEL_TIME = 6000;
+
+const LEVEL_TIME = 21100;
+
+const LEVEL_TIMES = [21100, 35400, 49250, 67150, 81350, 95200, 109350, 122700, 144100, 158350];
+var startTime = 0;
+var level = 0;
+var nextSwitch;
 
 var brick_across = 7;
 var brick_down; 
@@ -19,8 +25,8 @@ var brickColor3;
 var brickColor4;
 var gameStarted = false;
 var bgmStarted = false;
-var nextSwitch = LEVEL_TIME;
 var bgm;
+var highScore = 0;
 
 const KEYCODE_LEFT = 37;
 const KEYCODE_RIGHT = 39;
@@ -30,12 +36,16 @@ var keyboardMoveRight = false;
 
 function init() {
 
-	if(stage) {
-		stage.enableDOMEvents(false);
-		stage.removeAllChildren();
-		stage.removeAllEventListeners();
-		stage.clear();
+	if (typeof(Storage) !== "undefined") {
+		if(localStorage.highScore == undefined) {
+			localStorage.highScore = 0;
+		}
+		highScore = localStorage.highScore;
+	} else {
+		highScore = 0;
 	}
+
+	clearStage();
 
 	stage = new createjs.Stage("demoCanvas");
 	stage.enableDOMEvents(true);
@@ -54,17 +64,19 @@ function init() {
 	createjs.Sound.registerSound("assets/blockGame.mp3", "bgm");
 
 	//which block game?
-	init3();
-	//chooseGame();
+	//init3();
+	chooseGame();
 }
 
 function resetLevel() {
 	if (bgm.playState === "playFinished") {
-	//if (score >= 500) { to test win states
-		winGame();
+	//if (score >= 500) { // to test win states
+		endGame();
 	} else {
 		bricks = [];
 		gameStarted = false;
+		level += 1
+		nextSwitch = startTime + LEVEL_TIMES[level];
 		init();
 	}
 }
@@ -83,7 +95,7 @@ function createScoreText() {
 	scoreText.y = stage.canvas.height - 25;
 
 	scoreText2 = new createjs.Text("", "16px Arial", "#ffffff");
-	scoreText2.x = 10;			
+	scoreText2.x = 8;			
 	scoreText2.y = stage.canvas.height - 26;
 
 	stage.addChild(scoreText);
@@ -96,33 +108,37 @@ function addToScore(points) {
 	scoreText2.text = `Score: ${score}  |  Lives: ${lives}`;
 }
 
-function winGame() {
+function endGame() {
 
-	stage.enableDOMEvents(false);
-	stage.removeAllChildren();
-	stage.removeAllEventListeners();
-	stage.clear();
+	gameStarted = false;
+	clearStage();
 
-	showWinText();
+	demoCanvas.style.backgroundColor = "#000000";
+
+	if (score > highScore) {
+		highScore = score;
+		localStorage.highScore = score;
+	}
+
+	showEndText();
 }
 
-function showWinText() {
-	winText2 = new createjs.Text(`You won!\n\nScore: ${score}`, "bold 40px Arial", "#FFFFFF");
-	winText2.x = stage.canvas.width / 2;			
-	winText2.y = stage.canvas.height / 2 - 100;
-	winText2.textAlign = "center";
-
-	winText = new createjs.Text(`You won!\n\nScore: ${score}`, "bold 40px Arial", "#000000");
-	winText.x = stage.canvas.width / 2 - 1;			
-	winText.y = stage.canvas.height / 2 - 101;
+function showEndText() {
+	winText = new createjs.Text(`Game over!\n\n\nYour score: ${score}\n\nHigh score: ${highScore}`, "bold 32px Arial", "#FFFFFF");
+	winText.x = stage.canvas.width / 2;			
+	winText.y = stage.canvas.height / 2 - 100;
 	winText.textAlign = "center";
 
 	stage.addChild(winText);
-	stage.addChild(winText2);
 }
 
 function loseLife() {
 	lives--;
+	
+	if (lives <= 0) {
+		loseGame();
+	}
+
 	scoreText.text = `Score: ${score}  |  Lives: ${lives}`;
 	scoreText2.text = `Score: ${score}  |  Lives: ${lives}`;
 
@@ -130,16 +146,12 @@ function loseLife() {
 	demoCanvas.style.backgroundColor = randomHex();
 
 	gameStarted = false;
-
-	if (lives <= 0) {
-		loseGame();
-	}
 }
 
 function loseGame() {
 	lives = 3;
-	score -= 1000;
-	resetLevel();
+	score -= 2000;
+	//resetLevel();
 }
 
 function createBrick(x, y, c) {
@@ -158,6 +170,15 @@ function createBrick(x, y, c) {
 
 	//return brick;
 	bricks.push(brick);
+}
+
+function clearStage() {
+	if(stage) {
+		stage.enableDOMEvents(false);
+		stage.removeAllChildren();
+		stage.removeAllEventListeners();
+		stage.clear();
+	}
 }
 
 function randomHex() {
